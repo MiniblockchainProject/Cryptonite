@@ -69,7 +69,7 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex)
     result.push_back(Pair("size", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION)));
     Array txs;
     BOOST_FOREACH(const CTransaction&tx, block.vtx)
-        txs.push_back(tx.GetHash().GetHex());
+        txs.push_back(tx.GetTxID().GetHex());
     result.push_back(Pair("tx", txs));
     return result;
 }
