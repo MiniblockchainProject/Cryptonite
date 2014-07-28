@@ -77,7 +77,7 @@ public:
     uint64_t Accounts();
     uint64_t CoinAge(uint160 pubKey);
     bool HashForBlock(CBlock block, uint256 &hash);
-    uint32_t GetSlice(uint256 block, uint160 left, uint160 right, uint8_t *buf, uint32_t sz);
+    uint32_t GetSlice(uint256 block, uint160 left, uint160 right, uint8_t *buf, uint32_t sz, uint32_t *nodes);
 
 private:
     bool TempApply(CBlock block, list<CTxUndo> &undos);

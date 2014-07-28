@@ -530,7 +530,7 @@ bool TrieView::ConservativeBalances(int nMinConf, vector<uint160> hashes, vector
     return ComplexBalances(nMinConf,nMinConf,hashes,balances);
 }
 
-uint32_t TrieView::GetSlice(uint256 block, uint160 left, uint160 right, uint8_t *buf, uint32_t sz){
+uint32_t TrieView::GetSlice(uint256 block, uint160 left, uint160 right, uint8_t *buf, uint32_t sz, uint32_t *nodes){
     LOCK(cs_main);
     uint256 oldHash = m_bestBlock;
 
@@ -543,7 +543,7 @@ uint32_t TrieView::GetSlice(uint256 block, uint160 left, uint160 right, uint8_t 
 //    m_root->Print();
 
     uint32_t pos=0;
-    if(!TrieEngine::SubTrie(m_root,left,right,buf,&pos,(size_t)sz)){
+    if(!TrieEngine::SubTrie(m_root,left,right,buf,&pos,(size_t)sz,nodes)){
         //Restore
         assert(Activate(mapBlockIndex[oldHash],bad));
 	return 0;
@@ -573,11 +573,12 @@ bool TrieView::Flush(){
     size_t fsize = m_root->Children() * 200; //TODO: define this as max size of trie node
     uint8_t *buf = (uint8_t*)malloc(fsize);
     uint32_t pos=0;
+    uint32_t nodes=0;
     //m_root->Print();
     uint160_t left,right;
     left=0;
     memset(&right,0xFF,20);
-    if(!TrieEngine::SubTrie(m_root,left,right,buf,&pos,fsize)){
+    if(!TrieEngine::SubTrie(m_root,left,right,buf,&pos,fsize,nodes)){
 	free(buf);
      	fclose(fileout);
 	return false;

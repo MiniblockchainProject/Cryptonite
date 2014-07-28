@@ -775,6 +775,7 @@ bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock
                return error("%s : Deserialize or I/O error ", __PRETTY_FUNCTION__);
            return true;
        }
+       //printf("Could not find\n");
     }
 
     return false;
@@ -3579,7 +3580,8 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
 	}
 
 	uint8_t *buf = new uint8_t[MAX_TRIE_SLICE_SIZE];
-	uint32_t sz = pviewTip->GetSlice(hashBlock, left, right, buf, MAX_TRIE_SLICE_SIZE);
+	uint32_t nodes=0;
+	uint32_t sz = pviewTip->GetSlice(hashBlock, left, right, buf, MAX_TRIE_SLICE_SIZE,&nodes);
 	if(sz){
 	    data.assign(buf,buf+sz);
 	    pfrom->PushMessage("slice",CSlice(hashBlock,left,right,data));
@@ -3588,6 +3590,10 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
 	    delete []buf;
 	    pfrom->PushMessage("slice", CSlice(hashBlock, 0, 0, data));
 	    return error("slice failed to materialize = %s", hashBlock.GetHex().c_str());
+	}
+	if(nodes==0){
+	    LogPrintf("Node requesting infintesimal slices\n");
+	    Misbehaving(pfrom->GetId(), 50);
 	}
     }
 

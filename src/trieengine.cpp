@@ -198,7 +198,7 @@ bool hashNode(TrieNode* root,uint8_t *dst, uint32_t *pos, uint32_t max){
 	return true;
 }
 
-bool TrieEngine::SubTrie(TrieNode* root, uint160_t left, uint160_t right, uint8_t *dst, uint32_t *pos, uint32_t max, uint160_t ckey, uint32_t bits, bool hashOnly){
+bool TrieEngine::SubTrie(TrieNode* root, uint160_t left, uint160_t right, uint8_t *dst, uint32_t *pos, uint32_t max, uint32_t *nodes, uint160_t ckey, uint32_t bits, bool hashOnly){
 	uint160_t ones;
 	memset(&ones,0xFF,20);
 
@@ -206,6 +206,7 @@ bool TrieEngine::SubTrie(TrieNode* root, uint160_t left, uint160_t right, uint8_
 		return hashNode(root,dst,pos,max);
 	if(root->Type() == NODE_LEAF){
 		return root->Serialize(dst,pos,max);
+		*nodes++;
 	}else{
 		bits+=root->Bits();
 		ckey |= root->Key();
@@ -231,9 +232,9 @@ bool TrieEngine::SubTrie(TrieNode* root, uint160_t left, uint160_t right, uint8_
 		if(!root->Serialize(dst,pos,max))
 			return false;
 
-		if(!SubTrie(root->m_left,left,right,dst,pos,max,ckey,bits+1,hashLeft))
+		if(!SubTrie(root->m_left,left,right,dst,pos,max,nodes,ckey,bits+1,hashLeft))
 			return false;
-		if(!SubTrie(root->m_right,left,right,dst,pos,max,maxkey,bits+1,hashRight))
+		if(!SubTrie(root->m_right,left,right,dst,pos,max,nodes,maxkey,bits+1,hashRight))
 			return false;
 	}
 	return true;

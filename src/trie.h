@@ -93,7 +93,7 @@ public:
 	static void Insert(TrieNode **root, TrieNode *node, uint32_t bits=0);
 	static void Remove(TrieNode **root, TrieNode *node);
 	static uint64_t Size(TrieNode *root);
-	static bool SubTrie(TrieNode *root, uint160_t left, uint160_t right, uint8_t *dst, uint32_t *pos, uint32_t max, uint160_t ckey=0, uint32_t bits=0, bool hashOnly=false);
+	static bool SubTrie(TrieNode *root, uint160_t left, uint160_t right, uint8_t *dst, uint32_t *pos, uint32_t max, uint32_t *nodes, uint160_t ckey=0, uint32_t bits=0, bool hashOnly=false);
 	static void RebuildStructure(TrieNode *root);
 	static bool Prove(TrieNode *root, uint160_t left, uint160_t right);
 	static TrieNode* Find(uint160_t key, TrieNode *root, uint32_t keybits=0);
