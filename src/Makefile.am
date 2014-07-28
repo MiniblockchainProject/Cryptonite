@@ -163,7 +163,6 @@ cryptonited_LDADD = \
   libcryptonite_cli.a \
   libcryptonite_common.a \
   $(LIBLEVELDB) \
-  $(LIBLMDB) \
   $(LIBMEMENV) \
   -lpthread
 
@@ -201,12 +200,6 @@ leveldb/%.a:
 	@echo "Building LevelDB ..." && $(MAKE) -C $(@D) $(@F) CXX="$(CXX)" \
 	  CC="$(CC)" PLATFORM=$(TARGET_OS) AR="$(AR)" $(LEVELDB_TARGET_FLAGS) \
 	  OPT="$(CXXFLAGS) $(CPPFLAGS)"
-
-liblmdb/%.a:
-	@echo "Building LMDB ..." && $(MAKE) -C $(@D) $(@F) CXX="$(CXX)" \
-	  CC="$(CC)" AR="$(AR)" \
-	  OPT="$(CXXFLAGS) $(CPPFLAGS)"
-
 
 qt/cryptonitestrings.cpp: $(libcryptonite_server_a_SOURCES) $(libcryptonite_common_a_SOURCES) $(libcryptonite_cli_a_SOURCES)
 	@test -n $(XGETTEXT) || echo "xgettext is required for updating translations"
