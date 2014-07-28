@@ -1,0 +1,65 @@
+current state of affairs is that done means tested to work but help text may be messed up
+
+
+help - addmultisigaddress nrequired ["key",...] ( "account" )
+help - decoderawtransaction "hexstring"
+help - dumpprivkey "bitcoinaddress"
+help - dumpwallet "filename"
+help - encryptwallet "passphrase"
+help - getaccount "bitcoinaddress"
+help - getaccountaddress "account"
+help - getaddednodeinfo dns ( "node" )
+help - getaddressesbyaccount "account"
+help - getbalance ( "account" minconf )
+help - getbestblockhash
+help - getblock "hash" ( verbose )
+help - getblockcount
+help - getblockhash index
+help - getconnectioncount
+help - getdifficulty
+help - getgenerate
+help - gethashespersec
+help - getinfo
+help - getmininginfo
+help - getnettotals
+help - getnetworkhashps ( blocks height )
+help - getnewaddress ( "account" )
+help - getpeerinfo
+help - getrawmempool ( verbose )
+help - getrawtransaction "txid" ( verbose )
+help - getreceivedbyaccount "account" ( minconf )
+help - getreceivedbyaddress "bitcoinaddress" ( minconf )
+help - gettransaction "txid"
+help - gettxout "txid" n ( includemempool )
+help - gettxoutsetinfo
+help - getunconfirmedbalance
+help - getwalletinfo
+help - getwork ( "data" )
+help - help ( "command" )
+help - importprivkey "bitcoinprivkey" ( "label" rescan )
+help - importwallet "filename"
+help - keypoolrefill ( newsize )
+help - listaccounts ( minconf )
+help - listaddressgroupings
+help - listbalances ( minconf ["address",...] )
+help - listreceivedbyaccount ( minconf includeempty )
+help - listreceivedbyaddress ( minconf includeempty )
+help - listsinceblock ( "blockhash" target-confirmations )
+help - listtransactions ( "account" count from )
+help - move "fromaccount" "toaccount" amount ( minconf "comment" )
+help - ping
+help - sendfrom "fromaccount" "tobitcoinaddress" amount ( minconf "comment" "comment-to" ) - this does not actually make sure that source are bound to the specified account.
+help - "fromaccount" {"address":amount,...} ( minconf "comment" )
+help - sendrawtransaction "hexstring" ( allowhighfees )
+help - sendtoaddress "bitcoinaddress" amount ( "comment" "comment-to" )
+help - setaccount "bitcoinaddress" "account"
+help - setgenerate generate ( genproclimit )
+help - settxfee amount
+help - signmessage "bitcoinaddress" "message"
+help - signrawtransaction "hexstring" ( [{"txid":"id","vout":n,"scriptPubKey":"hex","redeemScript":"hex"},...] ["privatekey1",...] sighashtype )
+help - stop
+help - submitblock "hexdata" ( "jsonparametersobject" )
+help - validateaddress "bitcoinaddress"
+help - verifychain ( checklevel numblocks )
+help - verifymessage "bitcoinaddress" "signature" "message"
+
