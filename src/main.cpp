@@ -941,6 +941,8 @@ uint256 GetTargetWork(double nBits){
     CBigNum bnTarget = Params().ProofOfWorkLimit();
     uint256 target = bnTarget.getuint256();
 
+    //printf("Target: %s\n", target.GetHex().c_str());
+
     assert(nBits>=1.0);
     nBits *= (1LL<<52); //Weird shift
    
@@ -953,8 +955,12 @@ uint256 GetTargetWork(double nBits){
     mpz_set_uint256(mtarget,target);
     mpz_set_uii(t,(1LL<<52));
     mpz_mul(mtarget,mtarget,t);
+    //gmp_printf ("%Zx\n", mtarget);
+
     
     mpz_div(mtarget,mtarget,mbits);
+
+    //gmp_printf ("%Zx %Zx\n", mtarget, mbits);
 
     mpz_get_uint256(mtarget,target);
     mpz_clear(mbits);
@@ -977,7 +983,7 @@ bool CheckProofOfWork(uint256 hash, double nBits)
 #endif
     // Check proof of work matches claimed amount
     if (hash > target)
-        return error("CheckProofOfWork() : hash doesn't match nBits");
+        return error("CheckProofOfWork() : hash doesn't match nBits %s %s", hash.GetHex().c_str(), target.GetHex().c_str());
 
     return true;
 }

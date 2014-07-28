@@ -4,7 +4,6 @@ Bitcoin Core integration/staging tree
 http://www.bitcoin.org
 
 Copyright (c) 2009-2014 Bitcoin Core Developers
-Copyright (c) 2014 The Mini-blockchain project
 
 What is Bitcoin?
 ----------------

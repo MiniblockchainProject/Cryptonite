@@ -829,6 +829,7 @@ inline void mpz_set_uint256(mpz_t r, uint256& u)
 
 inline void mpz_get_uint256(mpz_t r, uint256& u)
 {
+    u=0;
     mpz_export(&u, 0, -1, sizeof(unsigned long), -1, 0, r);
 }
 
