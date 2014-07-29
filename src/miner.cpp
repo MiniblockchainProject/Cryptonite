@@ -70,6 +70,24 @@ public:
     }
 };
 
+string gen_random() {
+    char s[64];
+    memset(s,0,sizeof(s));
+    int len = 16;
+
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+
+    for (int i = 0; i < len; ++i) {
+        s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+
+    s[len] = 0;
+    return string(s);
+}
+
 CBlockTemplate* CreateNewBlock(uint160 pubKey)
 {
     // Create new block
@@ -84,6 +102,8 @@ CBlockTemplate* CreateNewBlock(uint160 pubKey)
     txNew.vin[0].SetNull();
     txNew.vout.resize(1);
     txNew.vout[0].pubKey = pubKey;//build transaction!!!!;
+    string msg = gen_random();
+    txNew.msg = vector<char>(msg.begin(),msg.end());
 
     // Add our coinbase tx as first transaction
     pblock->vtx.push_back(txNew);
