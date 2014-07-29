@@ -467,7 +467,10 @@ void static BitcoinMiner(CWallet *pwallet)
 			if ((pblock->nNonce & 0xfff) == 0){
             			boost::this_thread::interruption_point();
 			        if ((pblock->nNonce & 0xffff) == 0) {
-            				nHashesDone = 0xffff+1;
+					//Weird thing here. Since we are starting with random nonce
+					//On average the initial nonce will be 0x8000 and not 0xFFFF
+					//so only half of those were actually checked
+            				nHashesDone = (0xffff+1) >> 1;
 					break;
 				}
 			}
