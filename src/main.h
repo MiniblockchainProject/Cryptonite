@@ -96,6 +96,7 @@ static const unsigned char REJECT_CHECKPOINT = 0x43;
 
 extern CScript COINBASE_FLAGS;
 extern CCriticalSection cs_main;
+extern CConditionVariable cvBlockChange;
 extern CTxMemPool mempool;
 extern std::map<uint256, CBlockIndex*> mapBlockIndex;
 extern uint64_t nLastBlockTx;

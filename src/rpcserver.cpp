@@ -39,6 +39,7 @@ static map<string, boost::shared_ptr<deadline_timer> > deadlineTimers;
 static ssl::context* rpc_ssl_context = NULL;
 static boost::thread_group* rpc_worker_group = NULL;
 static boost::asio::io_service::work *rpc_dummy_work = NULL;
+static bool fRPCRunning=false;
 
 void RPCTypeCheck(const Array& params,
                   const list<Value_type>& typesExpected,
@@ -294,6 +295,7 @@ static const CRPCCommand vRPCCommands[] =
     { "balancesat",		&balancesat,	         false,     false,	false },
 
     /* Mining */
+    { "getblocktemplate",       &getblocktemplate,       true,      false,      false },
     { "getmininginfo",          &getmininginfo,          true,      false,      false },
     { "getnetworkhashps",       &getnetworkhashps,       true,      false,      false },
     { "submitblock",            &submitblock,            false,     true,       false },
@@ -660,6 +662,8 @@ void StartRPCThreads()
     rpc_worker_group = new boost::thread_group();
     for (int i = 0; i < GetArg("-rpcthreads", 4); i++)
         rpc_worker_group->create_thread(boost::bind(&asio::io_service::run, rpc_io_service));
+
+    fRPCRunning=true;
 }
 
 void StartDummyRPCThread()
@@ -673,6 +677,7 @@ void StartDummyRPCThread()
         rpc_worker_group = new boost::thread_group();
         rpc_worker_group->create_thread(boost::bind(&asio::io_service::run, rpc_io_service));
     }
+    fRPCRunning=true;
 }
 
 void StopRPCThreads()
@@ -687,6 +692,11 @@ void StopRPCThreads()
     delete rpc_worker_group; rpc_worker_group = NULL;
     delete rpc_ssl_context; rpc_ssl_context = NULL;
     delete rpc_io_service; rpc_io_service = NULL;
+    fRPCRunning=false;
+}
+
+bool IsRPCRunning(){
+    return fRPCRunning;
 }
 
 void RPCRunHandler(const boost::system::error_code& err, boost::function<void(void)> func)

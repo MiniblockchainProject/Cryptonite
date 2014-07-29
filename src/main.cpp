@@ -65,6 +65,7 @@ bool fValidating = false;
 unsigned int nCoinCacheSize = 5000;
 bool ForceNoTrie();
 set<NodeId> AllNodes();
+CConditionVariable cvBlockChange;
 
 /** Fees smaller than this (in satoshi) are considered zero fee (for transaction creation) */
 int64_t CTransaction::nMinTxFee = 1000;  // Override with -mintxfee
@@ -1444,6 +1445,7 @@ void static UpdateTip(CBlockIndex *pindexNew) {
             // strMiscWarning is read by GetWarnings(), called by Qt and the JSON-RPC code to warn the user:
             strMiscWarning = _("Warning: This version is obsolete, upgrade required!");
     }
+    cvBlockChange.notify_all();
 }
 
 // Disconnect chainActive's tip.
