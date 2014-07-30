@@ -281,13 +281,14 @@ Value getmininginfo(const Array& params, bool fHelp)
 #ifdef ENABLE_WALLET
 Value getwork(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() > 1)
+    if (fHelp || params.size() > 2)
         throw runtime_error(
             "getwork ( \"data\" )\n"
             "\nIf 'data' is not specified, it returns the formatted hash data to work on.\n"
             "If 'data' is specified, tries to solve the block and returns true if it was successful.\n"
             "\nArguments:\n"
             "1. \"data\"       (string, optional) The hex encoded data to solve\n"
+	    "2. \"hash\"       (boolean, optional) Return the hash of not accepted block instead of False\n"
             "\nResult (when 'data' is not specified):\n"
             "{\n"
             "  \"data\" : \"xxxxx\",      (string) The block data\n"
@@ -385,12 +386,19 @@ Value getwork(const Array& params, bool fHelp)
 
         pblock->nTime = pdata->nTime;
         pblock->nNonce = pdata->nNonce;
-        pblock->vtx[0].vin[0].scriptSig = mapNewBlock[pdata->hashMerkleRoot].second;
         pblock->hashMerkleRoot = pblock->BuildMerkleTree();
 
         assert(pwalletMain != NULL);
         double nBits = GetNextWorkRequired(chainActive.Tip(),pblock);
         uint256 hashTarget = GetTargetWork(nBits);
+        uint256 hash = pblock->GetHash();
+
+    	if (params.size() > 1 && hash > hashTarget){
+	     Object result;
+	     result.push_back(Pair("hash", hash.GetHex()));
+	     return result;
+    	}
+
         return CheckWork(pblock, hashTarget, *pwalletMain);
     }
 }
