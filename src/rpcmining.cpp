@@ -623,7 +623,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
     Object result;
     result.push_back(Pair("version", pblock->nVersion));
     result.push_back(Pair("previousblockhash", pblock->hashPrevBlock.GetHex()));
-    result.push_back(Pair("previousblockhash", pblock->hashAccountRoot.GetHex()));
+    result.push_back(Pair("accountroothash", pblock->hashAccountRoot.GetHex()));
     result.push_back(Pair("transactions", transactions));
     result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].vout[0].nValue));
     result.push_back(Pair("coinbasetx", HexStr(ssCB.begin(), ssCB.end())));
