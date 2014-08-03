@@ -64,10 +64,10 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent) :
     ui->setupUi(this);
     GUIUtil::restoreWindowGeometry("nHelpMessageDialogWindow", this->size(), this);
 
-    header = tr("Bitcoin Core") + " " + tr("version") + " " +
+    header = tr("Cryptonite") + " " + tr("version") + " " +
         QString::fromStdString(FormatFullVersion()) + "\n\n" +
         tr("Usage:") + "\n" +
-        "  bitcoin-qt [" + tr("command-line options") + "]                     " + "\n";
+        "  cryptonite-qt [" + tr("command-line options") + "]                     " + "\n";
 
     coreOptions = QString::fromStdString(HelpMessage(HMM_BITCOIN_QT));
 

@@ -287,6 +287,8 @@ void FinalizeNode(NodeId nodeid, const CNode *pnode) {
 
     if(pnode->fSliced)
 	trieSync.AbortSlice(pnode->slice,false, AllNodes(), nodeid);
+    if(mapNodeState.size()==0)
+	trieSync.Reset(); //Abort all slices and log2 shits if everybody dropped us
 }
 }
 
@@ -2733,6 +2735,31 @@ printAffairs();
 	chainActive.SetTip(pindexSyncPoint);
     }
 
+    //Do accelerated startup
+    if(chainHeaders.Height() > MIN_HISTORY){
+	CBlockIndex *pindex = chainHeaders[chainHeaders.Height()-144];
+    	//Have to make sure that pindex is reachable. 
+	CBlockIndex *pmove = pindex;
+	bool canMove = true;
+	for(int i=144; i < MIN_HISTORY; i++){
+	    if((pindex->nStatus & BLOCK_VALID_MASK) < BLOCK_VALID_TRANSACTIONS ||
+            	(pindex->nStatus & BLOCK_FAILED_MASK)){
+		canMove = false;
+		break;
+	    }
+	    pmove = pmove->pprev;
+	}
+	if(canMove){
+	    pmove = pindex;
+	    for(int i=144; i < MIN_HISTORY; i++){
+		pmove->fConnected=true;
+   	    	pmove = pmove->pprev;
+	    }
+	    chainActive.SetTip(pindex);
+	}
+    }
+    
+
     CheckForkWarningConditions(true);
 
     LogPrintf("LoadBlockIndexDB(): hashBestChain=%s height=%d date=%s progress=%f\n",
@@ -3594,7 +3621,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
 	    return error("slice failed to materialize = %s", hashBlock.GetHex().c_str());
 	}
 	if(nodes==0){
-	    LogPrintf("Node requesting infintesimal slices\n");
+	    LogPrintf("Node requesting infintesimal slices %d %d\n", nodes, sz);
 	    Misbehaving(pfrom->GetId(), 50);
 	}
     }
@@ -4448,7 +4475,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
 
     	//if(!trieOnline)
     	//printf("CanSync %d %ld %d\n", trieSync.CanSync(), setHeightMissing.size(), IsInitialBlockDownload());
-	if(trieSync.CanSync() && !fTrieOnline && !ForceNoTrie()){
+	if(trieSync.CanSync() && !fTrieOnline && !ForceNoTrie() && pto->nVersion > BROKEN_SLICE_VERSION){
 	    //If slice requested from peer. check for stall
 	    if(pto->fSliced){
 		if(pto->sliceTime > GetTime() + 60){
@@ -4462,6 +4489,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
 		CSlice slice = trieSync.GetSlice(pto->id);    
 		if(slice.m_right > slice.m_left){ //Sometimes no slices are available
 		    pto->PushMessage("getslice",slice.m_block,slice.m_left,slice.m_right);
+		    printf("Getting slice: %s %s %s\n", slice.m_block.GetHex().c_str(), slice.m_left.GetHex().c_str(),slice.m_right.GetHex().c_str());
 		    pto->fSliced=true;
 		    pto->sliceTime = GetTime();
 		    pto->slice = slice;

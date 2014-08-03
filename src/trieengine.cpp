@@ -205,8 +205,8 @@ bool TrieEngine::SubTrie(TrieNode* root, uint160_t left, uint160_t right, uint8_
 	if(hashOnly)
 		return hashNode(root,dst,pos,max);
 	if(root->Type() == NODE_LEAF){
+		(*nodes)++;
 		return root->Serialize(dst,pos,max);
-		*nodes++;
 	}else{
 		bits+=root->Bits();
 		ckey |= root->Key();

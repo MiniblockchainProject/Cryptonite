@@ -578,7 +578,7 @@ bool TrieView::Flush(){
     uint160_t left,right;
     left=0;
     memset(&right,0xFF,20);
-    if(!TrieEngine::SubTrie(m_root,left,right,buf,&pos,fsize,nodes)){
+    if(!TrieEngine::SubTrie(m_root,left,right,buf,&pos,fsize,&nodes)){
 	free(buf);
      	fclose(fileout);
 	return false;

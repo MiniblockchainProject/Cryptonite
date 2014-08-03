@@ -8,6 +8,7 @@
 #include "wallet.h"	
 
 TrieSync::TrieSync(){
+    log2size=0;
 }
 
 CBlockIndex* TrieSync::GetSyncPoint(){
@@ -54,6 +55,7 @@ void TrieSync::Reset(){
     }
     slices.clear();
     slicesRequested.clear();
+    log2size = 0;
 }
 
 //Remove any slices which are no longer tennable
