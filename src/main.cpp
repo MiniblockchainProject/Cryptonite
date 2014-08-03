@@ -1631,7 +1631,7 @@ void static UpdateMissingHeight() {
 
     int nWorstHeight = chainHeaders.Height() - MIN_HISTORY;
 
-    if(fTrieOnline){
+    if(fTrieOnline && !ForceNoTrie()){
     	CBlockIndex *pfork = chainActive.FindFork(chainHeaders.Tip());
 	nWorstHeight = pfork->nHeight;
     }
