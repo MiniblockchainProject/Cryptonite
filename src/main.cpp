@@ -1453,6 +1453,7 @@ void static UpdateTip(CBlockIndex *pindexNew) {
 // Disconnect chainActive's tip.
 bool static DisconnectTip(CValidationState &state) {
     LogPrintf("Disconnect tip : %s\n", chainActive.Tip()->GetBlockHash().GetHex());
+    AssertLockHeld(cs_main);
 
     CBlockIndex *pindexDelete = chainActive.Tip();
     assert(pindexDelete);
@@ -1495,6 +1496,8 @@ bool static DisconnectTip(CValidationState &state) {
 
 // Connect a new block to chainActive.
 bool static ConnectTip(CValidationState &state, CBlockIndex *pindexNew) {
+    AssertLockHeld(cs_main);
+
     assert(pindexNew->pprev == chainActive.Tip());
 
     LogPrintf("Connect tip : %s\n", pindexNew->GetBlockHash().GetHex());
@@ -1739,9 +1742,11 @@ bool ActivateBestHeader(CValidationState &state) {
 
     while(chainHeaders.FindFork(pindexFork) != chainHeaders.Tip()){
             // We need to disconnect a block, as it's no longer in the best chain.
-	    while(!chainHeaders.Contains(chainActive.Tip()))
+	    while(!chainHeaders.Contains(chainActive.Tip())){
+		LOCK(cs_main);
             	if (!DisconnectTip(state))
                     return error("Disconnecting tip %i (%s) failed", chainActive.Height(), chainActive.Tip()->GetBlockHash().ToString().c_str());
+	    }
 
 	    {
 		LOCK(cs_main);
