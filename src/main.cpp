@@ -2665,7 +2665,7 @@ CBlockIndex * InsertBlockIndex(const uint256 &hash, const CBlockHeader &header)
 }
 
 bool ForceNoTrie(){
- return GetAdjustedTime() < (int64_t)pindexGenesisBlock->nTime || (GetAdjustedTime()-pindexGenesisBlock->nTime) < (MIN_HISTORY * 120);
+ return false;//GetAdjustedTime() < (int64_t)pindexGenesisBlock->nTime || (GetAdjustedTime()-pindexGenesisBlock->nTime) < (MIN_HISTORY * 120);
 }
 
 bool static LoadBlockIndexDB()
