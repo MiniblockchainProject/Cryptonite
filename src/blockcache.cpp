@@ -39,6 +39,7 @@ bool CBlockCache::WriteUndoToDisk(CDiskBlockPos &pos, const uint256 &hashBlock, 
 
     // Write undo data
     long fileOutPos = ftell(fileout);
+    //printf("Writing at %ld\n", fileOutPos);
     if (fileOutPos < 0)
         return error("CBlockUndo::WriteToDisk : ftell failed");
     pos.nPos = (unsigned int)fileOutPos;

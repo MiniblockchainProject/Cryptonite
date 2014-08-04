@@ -2706,7 +2706,12 @@ printAffairs();
         return true;
 
     uint256 syncPoint=0;
+
+    uint256 triePoint = pviewTip->GetBestBlock();
+
+
     pblocktree->ReadSyncPoint(syncPoint);
+    printf("Sync point %s\n", syncPoint.GetHex().c_str());
  
     pindexGenesisBlock = mapBlockIndex[Params().HashGenesisBlock()];
 
@@ -2720,7 +2725,7 @@ printAffairs();
     chainHeaders.SetTip(pindexGenesisBlock); 
 
     //if genesis is really young set trieonline and write syncpoint to db
-    if(syncPoint==0 && ForceNoTrie()){
+    if(syncPoint==0 && triePoint != 0 && triePoint != mapBlockIndex[Params().HashGenesisBlock()]){
 	syncPoint = pindexGenesisBlock->GetBlockHash();
 	pblocktree->WriteSyncPoint(syncPoint); 
 	//init will activate trie?
@@ -2741,6 +2746,7 @@ printAffairs();
     }
 
     //Do accelerated startup
+#if 1
     if(chainHeaders.Height() > MIN_HISTORY){
 	CBlockIndex *pindex = chainHeaders[chainHeaders.Height()-144];
     	//Have to make sure that pindex is reachable. 
@@ -2763,12 +2769,12 @@ printAffairs();
 	    chainActive.SetTip(pindex);
 	}
     }
-    
+#endif    
 
     CheckForkWarningConditions(true);
 
-    LogPrintf("LoadBlockIndexDB(): hashBestChain=%s height=%d date=%s progress=%f\n",
-        chainActive.Tip()->GetBlockHash().ToString(), chainActive.Height(),
+    LogPrintf("LoadBlockIndexDB(): trieOnline=%d hashBestChain=%s height=%d date=%s progress=%f\n",
+        fTrieOnline, chainActive.Tip()->GetBlockHash().ToString(), chainActive.Height(),
         DateTimeStrFormat("%Y-%m-%d %H:%M:%S", chainActive.Tip()->GetBlockTime()),
         Checkpoints::GuessVerificationProgress(chainActive.Tip()));
 

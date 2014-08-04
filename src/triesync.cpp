@@ -224,6 +224,8 @@ void TrieSync::GetIntervals(multimap<CBlockIndex*,CSlice*> &slices, list<CInterv
 }
 
 CSlice TrieSync::GetSlice(NodeId id){
+    LOCK(cs_main);
+
     if(bans.count(id))
 	return CSlice(0);
 

@@ -91,8 +91,10 @@ public:
         std::string strValue;
         leveldb::Status status = pdb->Get(readoptions, slKey, &strValue);
         if (!status.ok()) {
-            if (status.IsNotFound())
+            if (status.IsNotFound()){
+		//printf("Not found\n");
                 return false;
+	    }
             LogPrintf("LevelDB read failure: %s\n", status.ToString().c_str());
             HandleError(status);
         }
@@ -100,6 +102,7 @@ public:
             CDataStream ssValue(strValue.data(), strValue.data() + strValue.size(), SER_DISK, CLIENT_VERSION);
             ssValue >> value;
         } catch(std::exception &e) {
+	    //printf("Exception\n");
             return false;
         }
         return true;
