@@ -2312,11 +2312,13 @@ bool ProcessBlock(CValidationState &state, CBlock* pblock, CNode* pfrom)
 }
 
 //Called to try and bring trie online
+volatile bool fBuilding=false;
 void ActivateTrie(){
     if(!trieSync.ReadyToBuild())
 	return;
  
     LOCK(cs_main); //Don't need anything happening while we embark on most dangerous activity ever invented
+    fBuilding=true;
     printf("Ready to go online\n");
 
     uint256 block;
@@ -2330,6 +2332,7 @@ void ActivateTrie(){
 	//not clear what we can mark as bad here, this should be impossible
 	//unless 1 of the blocks used to download was forgery, very bad situation
 	//probably warn user and restart triesync is best we can do	
+	fBuilding=false;
 	return;
     }
     printf("Account trie successfully constructed at %ld\n", pindex->nHeight);
@@ -2356,6 +2359,7 @@ void ActivateTrie(){
 	//Very bad
 	trieSync.Reset();
     }
+    fBuilding=false;
 }
 
 
@@ -4486,7 +4490,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
 
     	//if(!trieOnline)
     	//printf("CanSync %d %ld %d\n", trieSync.CanSync(), setHeightMissing.size(), IsInitialBlockDownload());
-	if(trieSync.CanSync() && !fTrieOnline && !ForceNoTrie() && pto->nVersion > BROKEN_SLICE_VERSION){
+	if(!fBuilding && trieSync.CanSync() && !fTrieOnline && !ForceNoTrie() && pto->nVersion > BROKEN_SLICE_VERSION){
 	    //If slice requested from peer. check for stall
 	    if(pto->fSliced){
 		if(pto->sliceTime > GetTime() + 60){
