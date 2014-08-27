@@ -443,7 +443,7 @@ Value listbalances(const Array& params, bool fHelp)
 //sa ToDo: Update documentation
 Value createrawtransaction(const Array& params, bool fHelp)
 {
-    if (fHelp || (params.size() != 2 && params.size() != 3))
+    if (fHelp || (params.size() < 2 && params.size() > 4 ))
         throw runtime_error(
             "createrawtransaction [{\"txid\":\"id\",\"vout\":n},...] {\"address\":amount,...}\n"
             "\nCreate a transaction spending the given inputs and sending to the given addresses.\n"
@@ -463,6 +463,7 @@ Value createrawtransaction(const Array& params, bool fHelp)
             "      ,...\n"
             "    }\n"
 	    "3. \"lockheight\"    (numeric, optional) specific lockheight where transaction becomes valid. default is current chain height\n"
+	    "4. \"msg\"		  (string, optional) message to include in transaction\n"
 
             "\nResult:\n"
             "\"transaction\"            (string) hex string of the transaction\n"
@@ -521,10 +522,15 @@ Value createrawtransaction(const Array& params, bool fHelp)
         rawTx.vout.push_back(out);
     }
 
-    if(params.size() > 2){
+    if(params.size() > 2 && params[2].get_int() > 0){
 	rawTx.nLockHeight = params[2].get_int();
     }else{
 	rawTx.nLockHeight = chainActive.Height();
+    }
+
+    if(params.size() > 3){
+	string msg = params[3].get_str();
+        rawTx.msg = vector<char>(msg.begin(),msg.end());
     }
 
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
