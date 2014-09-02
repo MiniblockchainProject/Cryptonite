@@ -158,13 +158,14 @@ Value getaccountaddress(const Array& params, bool fHelp)
 
 Value setaccount(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() < 1 || params.size() > 2)
+    if (fHelp || params.size() < 1 || params.size() > 3)
         throw runtime_error(
             "setaccount \"cryptoniteaddress\" \"account\"\n"
             "\nSets the account associated with the given address.\n"
             "\nArguments:\n"
             "1. \"cryptoniteaddress\"  (string, required) The cryptonite address to be associated with an account.\n"
             "2. \"account\"         (string, required) The account to assign the address to.\n"
+	    "3. \"create\"	    (bool, optional) Set if want to disable address creation on source.\n"
             "\nExamples:\n"
             + HelpExampleCli("setaccount", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XZ\" \"tabby\"")
             + HelpExampleRpc("setaccount", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XZ\", \"tabby\"")
@@ -180,7 +181,7 @@ Value setaccount(const Array& params, bool fHelp)
         strAccount = AccountFromValue(params[1]);
 
     // Detect when changing the account of an address that is the 'unused current key' of another account:
-    if (pwalletMain->mapAddressBook.count(address.Get()))
+    if (pwalletMain->mapAddressBook.count(address.Get()) && params.size() < 3)
     {
         string strOldAccount = pwalletMain->mapAddressBook[address.Get()].name;
         if (address == GetAccountAddress(strOldAccount))
