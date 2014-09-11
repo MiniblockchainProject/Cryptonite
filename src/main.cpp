@@ -3102,7 +3102,7 @@ string GetWarnings(string strFor)
 
     if (fSecretChainAttack){
         nPriority = 2000;
-        strStatusBar = strRPC = _("Warning: Unreachable blocks are being mined. Possible secret chain attack.");
+        strStatusBar = _("Warning: Unreachable blocks are being mined. Possible secret chain attack.");
     } else if (fLargeWorkForkFound)
     {
         nPriority = 2000;
