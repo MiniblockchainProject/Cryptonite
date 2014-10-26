@@ -3,7 +3,7 @@ Cryptonite Core integration/staging tree
 
 http://cryptonite.info
 
-Copyright (c) 2014 The Mini-blockchain Project
+Copyright (c) 2014 The Mini-blockchain Project<br />
 Copyright (c) 2009-2014 Bitcoin Core Developers
 
 What is Cryptonite
