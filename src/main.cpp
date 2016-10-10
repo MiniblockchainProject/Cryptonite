@@ -2729,7 +2729,7 @@ printAffairs();
     chainHeaders.SetTip(pindexGenesisBlock); 
 
     //if genesis is really young set trieonline and write syncpoint to db
-    if(syncPoint==0 && triePoint != 0 && triePoint != mapBlockIndex[Params().HashGenesisBlock()]){
+    if(syncPoint==0 && triePoint != 0 && triePoint != Params().HashGenesisBlock()){
 	syncPoint = pindexGenesisBlock->GetBlockHash();
 	pblocktree->WriteSyncPoint(syncPoint); 
 	//init will activate trie?
