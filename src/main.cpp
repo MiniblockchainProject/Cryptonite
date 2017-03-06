@@ -726,7 +726,7 @@ CBlockIndex* GetTxBlock(uint256 txid){
 
     CDiskTxPos postx;
     if(!pblocktree->ReadTxIndex(txid, postx)) 
-	return false;
+	return NULL;
 
     hashBlock = postx.hashBlock;
     return mapBlockIndex[hashBlock];
