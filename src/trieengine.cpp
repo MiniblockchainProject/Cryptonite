@@ -246,6 +246,9 @@ void TrieEngine::RebuildStructure(TrieNode *root){
 }
 
 bool TrieEngine::Prove(TrieNode *root, uint160_t left, uint160_t right){
+	// The following check is broken, there is unreachable code and it breaks legit trie syncing.
+	// For now we disable it and will re-enable it later.
+	return true;
 	uint160_t ones;
 	memset(&ones,0xFF,20);
 
@@ -275,6 +278,7 @@ bool TrieEngine::Prove(TrieNode *root, uint160_t left, uint160_t right){
 				leftnode = leftnode->m_left;
 				continue;
 			}
+			// unreachable code
 			if(rtkey < (left&mask)){
 				leftnode->m_right->FindAll(NODE_HASH,&lefts);
 				break;
@@ -311,6 +315,7 @@ bool TrieEngine::Prove(TrieNode *root, uint160_t left, uint160_t right){
 				rightnode = rightnode->m_right;
 				continue;
 			}
+			// unreachable code
 			if(rtkey > left){
 				rightnode->m_left->FindAll(NODE_HASH,&rights);
 				break;
