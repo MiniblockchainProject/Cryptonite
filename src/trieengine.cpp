@@ -245,91 +245,71 @@ void TrieEngine::RebuildStructure(TrieNode *root){
 	root->FindChildren();
 }
 
-bool TrieEngine::Prove(TrieNode *root, uint160_t left, uint160_t right){
-	// The following check is broken, there is unreachable code and it breaks legit trie syncing.
-	// For now we disable it and will re-enable it later.
-	return true;
+void TrieEngine::TraverseLeft(TrieNode *leftnode, uint160_t left, uint160_t right, list<TrieNode*> *lefts, int bits) {
 	uint160_t ones;
 	memset(&ones,0xFF,20);
-
-
-	//Principle here is that we will traverse the trie. locating all hash only nodes to the left of the left bound
-	//and to the right of the right bound. If the union of these sets contains all hash nodes in the subtrie, then
-	//the subtrie *must* contain all real nodes between left and right. 
-
-	//Locate all hash nodes to the left of left
-	TrieNode *leftnode = root;
-	list<TrieNode*> lefts;
-	int bits=0;
-	while(leftnode){
+	if(leftnode){
 		if(leftnode->Type()==NODE_BRANCH){
 			bits+=leftnode->Bits();
 			uint160 tkey = leftnode->GetTotalKey(leftnode->m_left,0);
 			uint160_t mask = ~(ones >> (bits+1));
 			uint160 rtkey = leftnode->GetTotalKey(leftnode->m_right,0);
 
-//			cout << tkey.GetHex() << ", " << rtkey.GetHex() << ", " << left.GetHex() << ", " << mask.GetHex().c_str() << endl;
-
-			
 			if(tkey < (left&mask)){
-				leftnode->FindAll(NODE_HASH,&lefts);
-				break;
+				leftnode->FindAll(NODE_HASH,lefts);
+				return;
 			}else{
-				leftnode = leftnode->m_left;
-				continue;
+				TraverseLeft(leftnode->m_left, left, right, lefts, bits);
 			}
-			// unreachable code
 			if(rtkey < (left&mask)){
-				leftnode->m_right->FindAll(NODE_HASH,&lefts);
-				break;
+				leftnode->m_right->FindAll(NODE_HASH,lefts);
+				return;
 			}else{
-				leftnode = leftnode->m_right;
-				continue;
+				TraverseLeft(leftnode->m_right, left, right, lefts, bits);
 			}
-			break;
-		}else if(leftnode->Type()==NODE_HASH){
-			break;
-		}else{
-			break;
 		}
 	}
+}
 
-	//Do right traversal
-	TrieNode *rightnode = root;
-	list<TrieNode*> rights;
-	bits=0;
-	while(rightnode){
+void TrieEngine::TraverseRight(TrieNode *rightnode, uint160_t left, uint160_t right, list<TrieNode*> *rights, int bits) {
+	uint160_t ones;
+	memset(&ones,0xFF,20);
+	if(rightnode){
 		if(rightnode->Type()==NODE_BRANCH){
 			bits+=rightnode->Bits();
-//			uint160 tkey = rightnode->GetTotalKey(rightnode->m_left,0);
-//			uint160_t mask = ~(ones >> (bits+1));
 			uint160 rtkey = rightnode->GetTotalKey(rightnode->m_right,0);
 
-//			cout << tkey.GetHex() << ", " << rtkey.GetHex() << ", " << right.GetHex() << ", " << mask.GetHex().c_str() << endl;
-
-			
 			if(rtkey > right){
-				rightnode->FindAll(NODE_HASH,&rights);
-				break;
+				rightnode->FindAll(NODE_HASH,rights);
+				return;
 			}else{
-				rightnode = rightnode->m_right;
-				continue;
+				TraverseRight(rightnode->m_right, left, right, rights, bits);
 			}
-			// unreachable code
 			if(rtkey > left){
-				rightnode->m_left->FindAll(NODE_HASH,&rights);
-				break;
+				rightnode->m_left->FindAll(NODE_HASH,rights);
+				return;
 			}else{
-				rightnode = rightnode->m_left;
-				continue;
+				TraverseRight(rightnode->m_left, left, right, rights, bits);
 			}
-			break;
-		}else if(rightnode->Type()==NODE_HASH){
-			break;
-		}else{
-			break;
 		}
 	}
+}
+
+bool TrieEngine::Prove(TrieNode *root, uint160_t left, uint160_t right){
+	uint160_t ones;
+	memset(&ones,0xFF,20);
+
+	//Principle here is that we will traverse the trie. locating all hash only nodes to the left of the left bound
+	//and to the right of the right bound. If the union of these sets contains all hash nodes in the subtrie, then
+	//the subtrie *must* contain all real nodes between left and right. 
+
+	//Locate all hash nodes to the left of left
+	list<TrieNode*> lefts;
+	TraverseLeft(root, left, right, &lefts, 0);
+
+	//Do right traversal
+	list<TrieNode*> rights;
+	TraverseRight(root, left, right, &rights, 0);
 
 	//For sanity check we must find all hash nodes
 	list<TrieNode*> hashnodes;
