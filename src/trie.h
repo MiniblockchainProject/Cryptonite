@@ -97,6 +97,8 @@ public:
 	static void RebuildStructure(TrieNode *root);
 	static bool Prove(TrieNode *root, uint160_t left, uint160_t right);
 	static TrieNode* Find(uint160_t key, TrieNode *root, uint32_t keybits=0);
+	static void TraverseLeft(TrieNode *leftnode, uint160_t left, uint160_t right, list<TrieNode*> *lefts, int bits);
+	static void TraverseRight(TrieNode *rightnode, uint160_t left, uint160_t right, list<TrieNode*> *rights, int bits);
 };
 
 void SerializeHash(uint8_t *dst, uint32_t *pos, uint160_t hash);
