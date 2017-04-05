@@ -4439,7 +4439,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
     	if (chainActive.Tip() && !fReindex && !fImporting && pto->nServices & NODE_NETWORK) {
 	    list<CBlockIndex*> toremove;
             BOOST_FOREACH(PAIRTYPE(CBlockIndex*, uint64_t) item, mapBlocksAskedFor){
-		if(item.second + 60 < (uint64_t)GetTime())
+		if(item.second + BLOCK_DOWNLOAD_TIMEOUT < (uint64_t)GetTime())
 		   toremove.push_back(item.first);
 	    }
 	    BOOST_FOREACH(CBlockIndex* item, toremove){
