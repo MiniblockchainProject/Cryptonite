@@ -302,10 +302,12 @@ void backtrace();
 //block and save it to the trie if possible. Pindex can be invalid!. This code will detect and unwind an invalid tx set. 
 bool TrieView::Apply(CBlockIndex *pindex){
     CBlock block;
-    assert(blockCache.ReadBlockFromDisk(block, pindex));   
+    if (!blockCache.ReadBlockFromDisk(block, pindex)) {
+	    //printf("WTF: %s %s\n", pindex->hashAccountRoot.GetHex().c_str(), block.hashAccountRoot.GetHex().c_str());
+	    //backtrace();
+	    return false;
+    }
 
-    //printf("WTF: %s %s\n", pindex->hashAccountRoot.GetHex().c_str(), block.hashAccountRoot.GetHex().c_str());
-    //backtrace();
 
     //we must generate invertible data of the block at this point
     //otherwise trie can not be unwound
