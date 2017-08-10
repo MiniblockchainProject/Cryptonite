@@ -3623,6 +3623,9 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
 	    }
 	}
 
+	// limit number of getslice from the same peer
+	Misbehaving(pfrom->GetId(), 2);
+	    
 	uint8_t *buf = new uint8_t[MAX_TRIE_SLICE_SIZE];
 	uint32_t nodes=0;
 	uint32_t sz = pviewTip->GetSlice(hashBlock, left, right, buf, MAX_TRIE_SLICE_SIZE,&nodes);
