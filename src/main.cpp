@@ -2332,7 +2332,13 @@ void ActivateTrie(){
 	//not clear what we can mark as bad here, this should be impossible
 	//unless 1 of the blocks used to download was forgery, very bad situation
 	//probably warn user and restart triesync is best we can do	
+	/*
+	krnlx: It must not happen, but once I got it: it seems to be bad nodes, or can be caused by bad RAM modules. 
+	So print error, and exit, if not, cryptonited will eat all aviable memory and die by oom-killer
+	*/
 	fBuilding=false;
+	printf("FATAL ERROR DURING SYNC. IT CAN BE CAUSED BY BAD NODES, OR H/W ERORRS. PLEASE CLEAN UP, AND RETRY.\n");
+	AbortNode(strMiscWarning);
 	return;
     }
     printf("Account trie successfully constructed at %ld\n", pindex->nHeight);

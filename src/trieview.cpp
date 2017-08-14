@@ -52,14 +52,24 @@ static void getSet(CBlockIndex *pindex, set<CBlockIndex*> &theSet){
 	}
 }
 
-#define MAX_BLOCK (1024*1024*2)
+//#define MAX_BLOCK (1024*1024*2)
 #define SAFE_UNIQ 10
+#define MORE_ALLOC 1024
 
 static void getSet2(CBlockIndex *pindex, set<CBlockIndex*> &theSet, CBlockIndex *pindex2, set<CBlockIndex*> &theSet2){
 	CBlockIndex **p;
 	CBlockIndex **p2;
-	p = (CBlockIndex**)malloc((sizeof(CBlockIndex *)) * MAX_BLOCK);
-	p2 = (CBlockIndex**)malloc((sizeof(CBlockIndex *)) * MAX_BLOCK);
+	size_t height = 0;
+	if(pindex)
+		height = pindex->nHeight;
+	if(pindex2 && pindex2->nHeight > height)
+		height = pindex2->nHeight; 
+
+	printf("height = %lu\n",height);
+	height+=MORE_ALLOC;
+ 
+	p = (CBlockIndex**)malloc((sizeof(CBlockIndex *)) * height);
+	p2 = (CBlockIndex**)malloc((sizeof(CBlockIndex *)) * height);
 	size_t index=0;
 	size_t index2=0;
 	        while(pindex){
@@ -73,24 +83,10 @@ static void getSet2(CBlockIndex *pindex, set<CBlockIndex*> &theSet, CBlockIndex 
                 index2++;
                 pindex2 = pindex2->pprev;
         }
-/*
-	printf("Added0 %llu %llu\n",index,index2);
-
-	if(index)
-		index--;
-	if(index2)
-		index2--;
-*/
 	printf("Added %lu %lu\n",index2,index);
 //	printf("%x %x\n",p[index],p2[index2],p2[index2-1]);
 
 	size_t i;
-/*
-for(i=0;i<10;i++)
-	printf("p[%i] = %x\n", i, p[index-i] );
-for(i=0;i<10;i++)
-        printf("p2[%i] = %x\n", i, p2[index2-i]);
-*/
 	while (index > SAFE_UNIQ && index2 > SAFE_UNIQ && (p[index-1] == p2[index2-1])){index--;index2--;}
 	printf("Reducted %lu %lu\n",index2,index);
 
