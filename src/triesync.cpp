@@ -11,6 +11,9 @@ TrieSync::TrieSync(){
     log2size=0;
 }
 
+#define DEC_LOG2SIZE() (log2size = (log2size <= 0) ? 0 : (log2size-1))
+#define INC_LOG2SIZE() (log2size = (log2size >= 158) ? 158 : (log2size+1))
+
 CBlockIndex* TrieSync::GetSyncPoint(){
     AssertLockHeld(cs_main);
 
@@ -94,7 +97,8 @@ void TrieSync::AbortSlice(CSlice slice, bool tooBig, set<NodeId> cnodes, NodeId 
 
     //as discussed in main.cpp, blindly increasing size is a bad idea!
     if(!nodesTooBig.count(id)){
-	log2size++;
+	//log2size++;
+	INC_LOG2SIZE();
 	nodesTooBig.insert(id);
 	return;
     }
@@ -113,7 +117,8 @@ void TrieSync::AbortSlice(CSlice slice, bool tooBig, set<NodeId> cnodes, NodeId 
     }else{
 	bans.clear();
 	nodesTooBig.clear();
-	log2size++;
+	//log2size++;
+	INC_LOG2SIZE();
     }
 }
 
@@ -162,7 +167,7 @@ bool TrieSync::AcceptSlice(CSlice slice){
     if(valid && pindex){
 	slices.insert(pair<CBlockIndex*,CSlice*>(pindex,new CSlice(slice)));	
     }   
-
+	DEC_LOG2SIZE();
     return valid;
 }
 
@@ -190,12 +195,36 @@ int TrieSync::GetProgress(){
 bool compareIntervals(CInterval lhs, CInterval rhs) { 
     return lhs.left < rhs.left; }
 
+
+uint160 INC_UINT160(uint160 x){
+    uint160 max;
+    memset(&max,0xFF,20);
+    if(x == max)
+        return max;
+    return x+1;
+}
+
+bool overlap_left(list<CInterval>::iterator it, list<CInterval>::iterator it2){
+	return (it2->left <= INC_UINT160(it->right) && (it2->left) >= it->left);
+}
+
+bool overlap(list<CInterval>::iterator it, list<CInterval>::iterator it2){
+	return (overlap_left(it,it2) || overlap_left(it2,it));
+}
+
+
+
+
 void TrieSync::GetIntervals(multimap<CBlockIndex*,CSlice*> &slices, list<CInterval> &intervals){
    //We want to produce a vector of all intervals that either have requests outstanding
     //or have already been fetched
+
+    int k=0;
     BOOST_FOREACH(PAIRTYPE(CBlockIndex*,CSlice*) pair, slices){
 	CSlice *pslice = pair.second;
 	intervals.push_back(CInterval(pslice->m_left,pslice->m_right));
+	printf("__INTERVAL%d:  %s - %s\n",k ,pslice->m_left.GetHex().c_str() ,pslice->m_right.GetHex().c_str());
+	k++;
     }
 
     //printf("IS: %ld\n", intervals.size());
@@ -207,10 +236,11 @@ void TrieSync::GetIntervals(multimap<CBlockIndex*,CSlice*> &slices, list<CInterv
 	for(list<CInterval>::iterator it=intervals.begin(); it!=intervals.end(); it++){
 	    list<CInterval>::iterator it2=it;
 	    for(it2++; it2!=intervals.end(); it2++){
-		if(it2->left <= it->right+1){
+		if(overlap(it,it2)){
 		    if(it2->right > it->right)
 		    	it->right = it2->right;
-
+		    if(it2->left < it->left)
+                        it->left = it2->left;
 		    intervals.erase(it2);
 		    progress=true;
 		    break;
@@ -220,6 +250,13 @@ void TrieSync::GetIntervals(multimap<CBlockIndex*,CSlice*> &slices, list<CInterv
 		break;
 	}
     }	
+
+
+     k=0;
+    BOOST_FOREACH(CInterval i, intervals){
+        printf("INTERVAL%d:  %s - %s\n",k ,i.left.GetHex().c_str() ,i.right.GetHex().c_str());
+	k++;
+    }
 
 }
 
@@ -235,7 +272,7 @@ CSlice TrieSync::GetSlice(NodeId id){
     allSlices.insert(slices.begin(),slices.end());
     allSlices.insert(slicesRequested.begin(),slicesRequested.end());	
     list<CInterval> intervals;
- 
+ printf("SLICE SIZE SHIFT %d %d\n", log2size, (159 - log2size));
     GetIntervals(allSlices,intervals);
  
     //printf("IS2: %ld\n", intervals.size());
