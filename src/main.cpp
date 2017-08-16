@@ -726,7 +726,7 @@ CBlockIndex* GetTxBlock(uint256 txid){
 
     CDiskTxPos postx;
     if(!pblocktree->ReadTxIndex(txid, postx)) 
-	return false;
+	return NULL;
 
     hashBlock = postx.hashBlock;
     return mapBlockIndex[hashBlock];
@@ -2332,7 +2332,13 @@ void ActivateTrie(){
 	//not clear what we can mark as bad here, this should be impossible
 	//unless 1 of the blocks used to download was forgery, very bad situation
 	//probably warn user and restart triesync is best we can do	
+	/*
+	krnlx: It must not happen, but once I got it: it seems to be bad nodes, or can be caused by bad RAM modules. 
+	So print error, and exit, if not, cryptonited will eat all aviable memory and die by oom-killer
+	*/
 	fBuilding=false;
+	printf("FATAL ERROR DURING SYNC. IT CAN BE CAUSED BY BAD NODES, OR H/W ERORRS. PLEASE CLEAN UP, AND RETRY.\n");
+	AbortNode(strMiscWarning);
 	return;
     }
     printf("Account trie successfully constructed at %ld\n", pindex->nHeight);
@@ -2729,7 +2735,7 @@ printAffairs();
     chainHeaders.SetTip(pindexGenesisBlock); 
 
     //if genesis is really young set trieonline and write syncpoint to db
-    if(syncPoint==0 && triePoint != 0 && triePoint != mapBlockIndex[Params().HashGenesisBlock()]){
+    if(syncPoint==0 && triePoint != 0 && triePoint != Params().HashGenesisBlock()){
 	syncPoint = pindexGenesisBlock->GetBlockHash();
 	pblocktree->WriteSyncPoint(syncPoint); 
 	//init will activate trie?
@@ -3623,6 +3629,9 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
 	    }
 	}
 
+	// limit number of getslice from the same peer
+	Misbehaving(pfrom->GetId(), 2);
+	    
 	uint8_t *buf = new uint8_t[MAX_TRIE_SLICE_SIZE];
 	uint32_t nodes=0;
 	uint32_t sz = pviewTip->GetSlice(hashBlock, left, right, buf, MAX_TRIE_SLICE_SIZE,&nodes);
@@ -4439,7 +4448,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
     	if (chainActive.Tip() && !fReindex && !fImporting && pto->nServices & NODE_NETWORK) {
 	    list<CBlockIndex*> toremove;
             BOOST_FOREACH(PAIRTYPE(CBlockIndex*, uint64_t) item, mapBlocksAskedFor){
-		if(item.second + 60 < (uint64_t)GetTime())
+		if(item.second + BLOCK_DOWNLOAD_TIMEOUT < (uint64_t)GetTime())
 		   toremove.push_back(item.first);
 	    }
 	    BOOST_FOREACH(CBlockIndex* item, toremove){

@@ -46,8 +46,59 @@ void TrieView::Force(TrieNode *root, uint256 block){
 static void getSet(CBlockIndex *pindex, set<CBlockIndex*> &theSet){
 	while(pindex){
 		theSet.insert(pindex);
+//                printf("getset %llu\n",pindex->nHeight);
+
 		pindex = pindex->pprev;
 	}
+}
+
+//#define MAX_BLOCK (1024*1024*2)
+#define SAFE_UNIQ 10
+#define MORE_ALLOC 1024
+
+static void getSet2(CBlockIndex *pindex, set<CBlockIndex*> &theSet, CBlockIndex *pindex2, set<CBlockIndex*> &theSet2){
+	CBlockIndex **p;
+	CBlockIndex **p2;
+	size_t height = 0;
+	if(pindex)
+		height = pindex->nHeight;
+	if(pindex2 && pindex2->nHeight > height)
+		height = pindex2->nHeight; 
+
+	printf("height = %lu\n",height);
+	height+=MORE_ALLOC;
+ 
+	p = (CBlockIndex**)malloc((sizeof(CBlockIndex *)) * height);
+	p2 = (CBlockIndex**)malloc((sizeof(CBlockIndex *)) * height);
+	size_t index=0;
+	size_t index2=0;
+	        while(pindex){
+		p[index]=pindex;
+		index++;
+                pindex = pindex->pprev;
+        }
+
+	        while(pindex2){
+                p2[index2]=pindex2;
+                index2++;
+                pindex2 = pindex2->pprev;
+        }
+	printf("Added %lu %lu\n",index2,index);
+//	printf("%x %x\n",p[index],p2[index2],p2[index2-1]);
+
+	size_t i;
+	while (index > SAFE_UNIQ && index2 > SAFE_UNIQ && (p[index-1] == p2[index2-1])){index--;index2--;}
+	printf("Reducted %lu %lu\n",index2,index);
+
+	for(i=0;i<index;i++){
+		//printf("Inserting %x[%i]\n",p[i],i);
+		theSet.insert(p[i]);
+}
+
+        for(i=0;i<index2;i++)
+                theSet2.insert(p2[i]);
+	free(p);
+	free(p2);
 }
 
 static void sortSet(set<CBlockIndex*> &theSet, vector<pair<uint64_t,CBlockIndex*> > &theVector){
@@ -63,8 +114,10 @@ bool TrieView::Activate(CBlockIndex *pindex, uint256 &badBlock){
     LOCK(cs_main);
     //Find shortest path to the validated Trie
     set<CBlockIndex*> newSet, oldSet, oldSetCopy;
-    getSet(pindex,newSet);
-    getSet((*mapBlockIndex.find(m_bestBlock)).second,oldSet);
+    
+	getSet2(pindex,newSet,(*mapBlockIndex.find(m_bestBlock)).second,oldSet);
+//    getSet(pindex,newSet);
+//    getSet((*mapBlockIndex.find(m_bestBlock)).second,oldSet);
 
     LogPrintf("Activate %s\n", pindex->GetBlockHeader().GetHash().GetHex().c_str());
 
@@ -78,12 +131,15 @@ bool TrieView::Activate(CBlockIndex *pindex, uint256 &badBlock){
     oldSetCopy = oldSet;
     set<CBlockIndex*>::iterator it;
     for(it = newSet.begin(); it != newSet.end(); it++){
+//	printf("olderase %llu\n",(*it)->nHeight);
         oldSet.erase(*it);
     }
 
     for(it = oldSetCopy.begin(); it != oldSetCopy.end(); it++){
 	newSet.erase(*it);
     }
+
+   printf("OSe %ld NSe %ld\n", oldSet.size(), newSet.size());
     
     //TODO: if the sets are longer than cycle time we have detected a pre cycle fork here. 
     //Supposed to break or whatever
@@ -302,10 +358,12 @@ void backtrace();
 //block and save it to the trie if possible. Pindex can be invalid!. This code will detect and unwind an invalid tx set. 
 bool TrieView::Apply(CBlockIndex *pindex){
     CBlock block;
-    assert(blockCache.ReadBlockFromDisk(block, pindex));   
+    if (!blockCache.ReadBlockFromDisk(block, pindex)) {
+	    //printf("WTF: %s %s\n", pindex->hashAccountRoot.GetHex().c_str(), block.hashAccountRoot.GetHex().c_str());
+	    //backtrace();
+	    return false;
+    }
 
-    //printf("WTF: %s %s\n", pindex->hashAccountRoot.GetHex().c_str(), block.hashAccountRoot.GetHex().c_str());
-    //backtrace();
 
     //we must generate invertible data of the block at this point
     //otherwise trie can not be unwound

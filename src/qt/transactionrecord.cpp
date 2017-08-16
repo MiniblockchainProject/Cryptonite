@@ -154,7 +154,7 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
     if (mi != mapBlockIndex.end())
         pindex = (*mi).second;
 #endif
-    status.countsForBalance = true; //TODO: Wtf this do?
+    //status.countsForBalance = true; //TODO: Wtf this do?
     status.depth = GetDepthInMainChain(wtx.GetTxID());
     status.cur_num_blocks = chainActive.Height();
 
@@ -223,6 +223,7 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
             status.status = TransactionStatus::Confirmed;
         }
     }
+    status.countsForBalance = (status.status == TransactionStatus::Confirmed);
 }
 
 bool TransactionRecord::statusUpdateNeeded()
